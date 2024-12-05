@@ -1,0 +1,27 @@
+@startuml
+participant mes as "MES"
+participant mes_api as "MES API"
+participant cache as "Cache"
+database mes_db as "MES DB"
+== Чтение списка заказов == 
+autonumber
+mes -> mes_api++ : GET /orders
+mes_api -> cache++ : getOrders
+alt cache hit 
+cache -> mes_api : orders
+else cache miss
+cache -> mes_db++ : SELECT
+mes_db -> cache-- : orders
+cache -> mes_api-- : orders
+end alt
+mes_api -> mes-- : orders
+|||
+== Изменение статуса заказа == 
+autonumber
+mes -> mes_api++ : POST /orders/{id}
+mes_api -> cache++ : getOrder[id]
+cache -> mes_db++ : UPDATE
+mes_db --> cache-- : status
+cache --> mes_api-- : status
+mes_api --> mes-- : status
+@enduml
